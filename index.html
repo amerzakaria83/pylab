@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NGN 112 PyLab</title>
+<meta name="description" content="A Colab-style Python notebook that runs entirely in the browser, with NumPy, pandas, matplotlib, seaborn, scikit-learn and mlxtend.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23e8710a'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='15' font-weight='bold' text-anchor='middle' fill='white'%3Epy%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">py</div>
+    <div class="brand-text">
+      <input id="nb-title" class="nb-title" spellcheck="false" aria-label="Notebook title">
+      <nav class="menubar" id="menubar">
+        <div class="menu"><button class="menu-btn">File</button>
+          <div class="menu-list">
+            <button data-cmd="new">New notebook</button>
+            <button data-cmd="open">Open notebook (.ipynb)…</button>
+            <hr>
+            <button data-cmd="download-ipynb">Download .ipynb</button>
+            <button data-cmd="download-py">Download .py</button>
+          </div>
+        </div>
+        <div class="menu"><button class="menu-btn">Edit</button>
+          <div class="menu-list">
+            <button data-cmd="add-code">Insert code cell <kbd>Ctrl+M B</kbd></button>
+            <button data-cmd="add-text">Insert text cell</button>
+            <button data-cmd="delete-cell">Delete selected cell <kbd>Ctrl+M D</kbd></button>
+            <hr>
+            <button data-cmd="clear-outputs">Clear all outputs</button>
+          </div>
+        </div>
+        <div class="menu"><button class="menu-btn">Runtime</button>
+          <div class="menu-list">
+            <button data-cmd="run-all">Run all <kbd>Ctrl+F9</kbd></button>
+            <button data-cmd="run-before">Run before</button>
+            <button data-cmd="run-after">Run selected and after</button>
+            <button data-cmd="stop">Interrupt execution</button>
+            <hr>
+            <button data-cmd="restart">Restart runtime</button>
+            <button data-cmd="restart-run-all">Restart and run all</button>
+            <hr>
+            <button data-cmd="settings">Settings…</button>
+          </div>
+        </div>
+        <div class="menu"><button class="menu-btn">Examples</button>
+          <div class="menu-list" id="examples-menu"></div>
+        </div>
+        <div class="menu"><button class="menu-btn">Help</button>
+          <div class="menu-list">
+            <button data-cmd="help">Keyboard shortcuts &amp; tips</button>
+            <button data-cmd="libraries">Available libraries</button>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </div>
+  <div class="top-right">
+    <span id="mode-badge" class="badge" hidden></span>
+    <span id="status" class="status loading"><span class="dot"></span><span class="status-text">Starting…</span></span>
+    <button id="theme-btn" class="icon-btn" title="Toggle dark mode" aria-label="Toggle dark mode">
+      <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.39 5.39 0 0 1-4.4 2.26 5.4 5.4 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="toolbar">
+  <button class="tb-btn" data-cmd="toggle-sidebar" title="Files and variables">
+    <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z"/></svg>
+  </button>
+  <span class="tb-sep"></span>
+  <button class="tb-btn" data-cmd="add-code">+ Code</button>
+  <button class="tb-btn" data-cmd="add-text">+ Text</button>
+  <span class="tb-sep"></span>
+  <button class="tb-btn" data-cmd="run-all" title="Run all cells (Ctrl+F9)">
+    <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M8 5v14l11-7z"/></svg> Run all</button>
+  <button class="tb-btn" id="stop-btn" data-cmd="stop" title="Interrupt execution" disabled>
+    <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M6 6h12v12H6z"/></svg> Stop</button>
+  <button class="tb-btn" data-cmd="restart" title="Restart runtime (clears variables)">
+    <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg> Restart</button>
+  <span class="tb-sep"></span>
+  <button class="tb-btn" data-cmd="clear-outputs" title="Clear all outputs">Clear outputs</button>
+  <span class="tb-spacer"></span>
+  <span id="save-state" class="save-state"></span>
+</div>
+
+<div class="layout">
+  <aside id="sidebar" class="sidebar">
+    <div class="side-tabs">
+      <button class="side-tab active" data-tab="files">Files</button>
+      <button class="side-tab" data-tab="vars">Variables</button>
+    </div>
+    <section class="side-panel" id="panel-files">
+      <div class="side-actions">
+        <button class="small-btn" id="upload-btn">
+          <svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg> Upload</button>
+        <button class="small-btn" id="refresh-files" title="Refresh">
+          <svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg></button>
+        <input type="file" id="upload-input" multiple hidden>
+      </div>
+      <div id="drop-zone" class="drop-zone">
+        <ul id="file-list" class="file-list"></ul>
+        <p class="side-note">Drop files here. Read them with their name, e.g. <code>pd.read_csv('iris.data')</code>. Uploaded files are lost when the page is closed.</p>
+      </div>
+    </section>
+    <section class="side-panel" id="panel-vars" hidden>
+      <div id="var-list" class="var-list"></div>
+    </section>
+  </aside>
+
+  <main id="notebook" class="notebook" tabindex="-1">
+    <div id="cells" class="cells"></div>
+    <div class="add-bottom">
+      <button class="add-btn" data-cmd="add-code-end">+ Code</button>
+      <button class="add-btn" data-cmd="add-text-end">+ Text</button>
+    </div>
+  </main>
+</div>
+
+<input type="file" id="open-input" accept=".ipynb,application/json" hidden>
+<div id="modal" class="modal" hidden><div class="modal-card" role="dialog" aria-modal="true"><div id="modal-body"></div><div class="modal-actions" id="modal-actions"></div></div></div>
+<div id="toast" class="toast" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/comment/comment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js"></script>
+<script src="datasets.js"></script>
+<script src="runner.js"></script>
+<script src="examples.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
